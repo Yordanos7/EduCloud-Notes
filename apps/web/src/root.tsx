@@ -11,7 +11,6 @@ import "./index.css";
 import Header from "./components/header";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
-import Index from "./pages/Index";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,7 +21,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap",
   },
 ];
 
@@ -55,7 +54,7 @@ export default function App() {
       <div className="grid grid-rows-[auto_1fr] h-svh">
         <Header />
 
-        <Index />
+        <Outlet />
       </div>
       <Toaster richColors />
     </ThemeProvider>

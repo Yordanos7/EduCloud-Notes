@@ -11,36 +11,91 @@ datasource db {
 }
 
 model User {
-  id      String  @id @default(uuid())
-  providerId  String? @map("provider_id")
-  name   String? 
-  email   String?   @unique
-  avatarUrl   String    @map("avatar_url)
-  role  role   @default(USER)
-  notes   Note[]   @relation("NoteOwner)
-  collaborators Collaborators[]
-  revisions  Revision[] @relation ("UserRevision)
-  attachments Attachments[]
-  createdAt   DateTime   @default(now()) @map(created_at);
-  updateAt DateTime @updateAt @map("updated_at")
-  settings UserSettings?
-  audioLogos AuditLog[] @relation("userAudit);
+  id            String    @id @default(uuid())
+  providerId    String?   @map("provider_id")
+  name          String?
+  email         String?   @unique
+  emailVerified Boolean?
+  image         String?
+  avatarUrl     String?   @map("avatar_url")
+  role          Role      @default(USER)
+  notes         Note[]    @relation("NoteOwner")
+  collaborators Collaborator[]
+  revisions     Revision[] @relation("UserRevision")
+  attachments   Attachment[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  settings      UserSettings?
+  audioLogos    AuditLog[] @relation("userAudit")
+  sessions      Session[]
+  accounts      Account[]
+  notebooks     NoteBook[]
+  invitedCollaborators Collaborator[] @relation("Invites")
+  createdShareLinks ShareLink[]
+  comments      Comment[]
 
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
 }
 
 model NoteBook {
     id String @id @default(uuid())
-    owner User @relation(fields: [owner]. referances:[id])
+    owner User @relation(fields: [ownerId], references: [id])
     ownerId   String
     title String
     description  String?
-    visibility Visibility @default(now()) @map("created_at")
-    updateAt     DateTime   @updateAt  @map("updated_at")
+    visibility Visibility @default(PRIVATE)
+    createdAt DateTime @default(now()) @map("created_at")
+    updateAt     DateTime   @updatedAt  @map("updated_at")
+    notes Note[]
 }
 
 model Note {
   id                 String        @id @default(uuid())
-  notebook           Notebook?     @relation(fields: [notebookId], references: [id])
+  notebook           NoteBook?     @relation(fields: [notebookId], references: [id])
   notebookId         String?       @map("notebook_id")
   owner              User          @relation("NoteOwner", fields: [ownerId], references: [id])
   ownerId            String        @map("owner_id")
@@ -56,7 +111,7 @@ model Note {
   tags               NoteTag[]
   comments           Comment[]
   currentRevision    Revision?     @relation("CurrentRevision", fields: [currentRevisionId], references: [id])
-  currentRevisionId  String?       @map("current_revision_id")
+  currentRevisionId  String?       @unique @map("current_revision_id")
   createdAt          DateTime      @default(now()) @map("created_at")
   updatedAt          DateTime      @updatedAt @map("updated_at")
   lastEditedAt       DateTime?
@@ -67,7 +122,7 @@ model Revision {
   id          String   @id @default(uuid())
   note        Note     @relation(fields: [noteId], references: [id])
   noteId      String   @map("note_id")
-  editor      User     @relation("UserRevisions", fields: [editorId], references: [id])
+  editor      User     @relation("UserRevision", fields: [editorId], references: [id])
   editorId    String   @map("editor_id")
   content     String   @map("content_snapshot")
   contentMime String?  @map("content_mime")
