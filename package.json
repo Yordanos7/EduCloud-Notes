@@ -24,6 +24,10 @@
   },
   "dependencies": {
     "dotenv": "^17.2.2",
+    "gsap": "^3.13.0",
+    "lucide-react": "^0.553.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
