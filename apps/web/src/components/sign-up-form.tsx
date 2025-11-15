@@ -46,7 +46,7 @@ export default function SignUpForm() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Basic validation
     if (password !== confirmPassword) {
@@ -57,13 +57,27 @@ export default function SignUpForm() {
       toast.error("Password must be at least 8 characters long.");
       return;
     }
-    // Here you would typically integrate with your backend for sign-up
-    console.log("Sign Up Data:", { name, email, password });
-    toast.success("Account created successfully!");
-    // Simulate navigation after successful sign-up
-    setTimeout(() => {
-      navigate("/dashboard"); // Or wherever you want to redirect after sign-up
-    }, 1000);
+    try {
+      const response = await fetch("http://localhost:3000/api/auth/sign-up", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Sign-up failed.");
+      }
+
+      toast.success("Account created successfully!");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred.");
+    }
   };
 
   return (
