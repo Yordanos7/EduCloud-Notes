@@ -135,11 +135,11 @@ const SignUp = () => {
                     required
                     className="transition-smooth"
                   />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-red-500">
+                      {field.state.meta.errors[0]?.message}
                     </p>
-                  ))}
+                  )}
                 </div>
               )}
             </form.Field>
@@ -158,11 +158,11 @@ const SignUp = () => {
                     required
                     className="transition-smooth"
                   />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-red-500">
+                      {field.state.meta.errors[0]?.message}
                     </p>
-                  ))}
+                  )}
                 </div>
               )}
             </form.Field>
@@ -181,11 +181,11 @@ const SignUp = () => {
                     required
                     className="transition-smooth"
                   />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-red-500">
+                      {field.state.meta.errors[0]?.message}
                     </p>
-                  ))}
+                  )}
                 </div>
               )}
             </form.Field>
@@ -204,11 +204,11 @@ const SignUp = () => {
                     required
                     className="transition-smooth"
                   />
-                  {field.state.meta.errors.map((error) => (
-                    <p key={error?.message} className="text-red-500">
-                      {error?.message}
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-red-500">
+                      {field.state.meta.errors[0]?.message}
                     </p>
-                  ))}
+                  )}
                 </div>
               )}
             </form.Field>
