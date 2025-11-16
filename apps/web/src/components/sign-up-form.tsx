@@ -12,12 +12,11 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "./ui/use-toast"; // Assuming use-toast is now in ui folder
 import gsap from "gsap";
+import { authClient } from "@/lib/auth-client";
+import { useForm } from "@tanstack/react-form";
+import z from "zod";
 
 const SignUp = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -46,29 +45,61 @@ const SignUp = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+      name: "",
+      confirmPassword: "",
+    },
 
-    if (password !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Simulate account creation
-    toast({
-      title: "Success!",
-      description: "Your account has been created. Welcome to EduCloud Notes!",
-    });
-
-    setTimeout(() => {
-      navigate("/dashboard");
-      console.log("the user has been redirected to the dashboard");
-    }, 1500);
-  };
+    // this code is writen to handle the form submission for sign up using zod for validation
+    onSubmit: async ({ value }) => {
+      if (value.password !== value.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+      // here i use authClient to sign up the user
+      await authClient.signUp.email(
+        {
+          email: value.email,
+          password: value.password,
+          name: value.name,
+        },
+        {
+          onSuccess: () => {
+            navigate("/dashboard");
+            toast({
+              title: "Success!",
+              description:
+                "Your account has been created. Welcome to EduCloud Notes!",
+            });
+          },
+          onError: (error) => {
+            toast({
+              title: "Error",
+              description: error.error.message || error.error.statusText,
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    },
+    validators: {
+      onSubmit: z.object({
+        name: z.string().min(2, "Name must be at least 2 characters"),
+        email: z.string().email("Invalid email address"),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+        confirmPassword: z
+          .string()
+          .min(8, "Password must be at least 8 characters"),
+      }),
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
@@ -82,66 +113,120 @@ const SignUp = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="input-field space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="transition-smooth"
-              />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="space-y-5"
+          >
+            <form.Field name="name">
+              {(field) => (
+                <div className="input-field space-y-2">
+                  <Label htmlFor={field.name}>Full Name</Label>
+                  <Input
+                    id={field.name}
+                    type="text"
+                    placeholder="John Doe"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    required
+                    className="transition-smooth"
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-red-500">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <div className="input-field space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@student.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="transition-smooth"
-              />
-            </div>
+            <form.Field name="email">
+              {(field) => (
+                <div className="input-field space-y-2">
+                  <Label htmlFor={field.name}>Email</Label>
+                  <Input
+                    id={field.name}
+                    type="email"
+                    placeholder="you@student.edu"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    required
+                    className="transition-smooth"
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-red-500">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <div className="input-field space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="transition-smooth"
-              />
-            </div>
+            <form.Field name="password">
+              {(field) => (
+                <div className="input-field space-y-2">
+                  <Label htmlFor={field.name}>Password</Label>
+                  <Input
+                    id={field.name}
+                    type="password"
+                    placeholder="••••••••"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    required
+                    className="transition-smooth"
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-red-500">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <div className="input-field space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="transition-smooth"
-              />
-            </div>
+            <form.Field name="confirmPassword">
+              {(field) => (
+                <div className="input-field space-y-2">
+                  <Label htmlFor={field.name}>Confirm Password</Label>
+                  <Input
+                    id={field.name}
+                    type="password"
+                    placeholder="••••••••"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    required
+                    className="transition-smooth"
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <p key={error?.message} className="text-red-500">
+                      {error?.message}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </form.Field>
 
-            <Button
-              type="submit"
-              className="w-full shadow-royal-md hover:scale-105 transition-smooth"
-              size="lg"
-            >
-              Create Account
-            </Button>
+            <form.Subscribe>
+              {(state) => (
+                <Button
+                  type="submit"
+                  className="w-full shadow-royal-md hover:scale-105 transition-smooth"
+                  size="lg"
+                  disabled={!state.canSubmit || state.isSubmitting}
+                >
+                  {state.isSubmitting
+                    ? "Creating Account..."
+                    : "Create Account"}
+                </Button>
+              )}
+            </form.Subscribe>
           </form>
 
           <div className="mt-6 text-center text-sm">
