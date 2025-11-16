@@ -66,6 +66,7 @@ const SignUp = () => {
 
     setTimeout(() => {
       navigate("/dashboard");
+      console.log("the user has been redirected to the dashboard");
     }, 1500);
   };
 
